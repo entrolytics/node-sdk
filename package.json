@@ -1,0 +1,64 @@
+{
+  "name": "@entrolytics/node-sdk",
+  "version": "2.0.0",
+  "description": "Node.js SDK for Entrolytics analytics - server-side tracking with Web Vitals, Forms, and Deployment support",
+  "author": "Entrolytics <hey@ng.entrolytics.click>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/entrolytics/node-sdk.git"
+  },
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://ng.entrolytics.click",
+  "bugs": {
+    "url": "https://github.com/entrolytics/node-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "dev": "rollup -c rollup.config.mjs --watch",
+    "lint": "biome check .",
+    "check": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.8",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@types/node": "^24.10.1",
+    "rollup": "^4.53.3",
+    "rollup-plugin-dts": "^6.3.0",
+    "rollup-plugin-esbuild": "^6.2.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  },
+  "engines": {
+    "node": ">=24.x"
+  },
+  "keywords": [
+    "analytics",
+    "tracking",
+    "server-side",
+    "node",
+    "entrolytics",
+    "entrolytics-ng",
+    "privacy"
+  ]
+}
