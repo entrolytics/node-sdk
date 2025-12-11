@@ -1,6 +1,6 @@
 # @entrolytics/node
 
-Server-side analytics tracking SDK for Node.js applications.
+Node.js SDK for [Entrolytics](https://ng.entrolytics.click) - First-party growth analytics for the edge.
 
 ## Installation
 
