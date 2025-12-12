@@ -1,27 +1,95 @@
-# @entrolytics/node
+<div align="center">
+  <img src="https://raw.githubusercontent.com/entrolytics/.github/main/media/entrov2.png" alt="Entrolytics" width="64" height="64">
 
-Node.js SDK for [Entrolytics](https://ng.entrolytics.click) - First-party growth analytics for the edge.
+  [![npm](https://img.shields.io/npm/v/@entrolytics/node-sdk.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/node-sdk)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
+
+</div>
+
+---
+
+## Overview
+
+**@entrolytics/node-sdk** is the official Node.js SDK for Entrolytics - first-party growth analytics for the edge. Track events server-side from any Node.js application.
+
+**Why use this SDK?**
+- Server-side event tracking from any Node.js environment
+- Web Vitals and Core Web Vitals tracking
+- Form analytics and deployment tracking
+- TypeScript-first with complete type definitions
+
+## Key Features
+
+<table>
+<tr>
+<td width="50%">
+
+### Analytics
+- Page view tracking
+- Custom event tracking
+- User identification
+- Property management
+
+</td>
+<td width="50%">
+
+### Advanced Features
+- Web Vitals (LCP, INP, CLS)
+- Form analytics
+- Deployment tracking
+- Edge and standard endpoints
+
+</td>
+</tr>
+</table>
+
+## Quick Start
+
+<table>
+<tr>
+<td align="center" width="25%">
+<img src="https://api.iconify.design/lucide:download.svg?color=%236366f1" width="48"><br>
+<strong>1. Install</strong><br>
+<code>npm i @entrolytics/node-sdk</code>
+</td>
+<td align="center" width="25%">
+<img src="https://api.iconify.design/lucide:code.svg?color=%236366f1" width="48"><br>
+<strong>2. Create Client</strong><br>
+<code>new Entrolytics(config)</code>
+</td>
+<td align="center" width="25%">
+<img src="https://api.iconify.design/lucide:settings.svg?color=%236366f1" width="48"><br>
+<strong>3. Configure</strong><br>
+Set Website ID and Host
+</td>
+<td align="center" width="25%">
+<img src="https://api.iconify.design/lucide:bar-chart-3.svg?color=%236366f1" width="48"><br>
+<strong>4. Track</strong><br>
+View analytics in dashboard
+</td>
+</tr>
+</table>
 
 ## Installation
 
 ```bash
 # pnpm (recommended)
-pnpm add @entrolytics/node
+pnpm add @entrolytics/node-sdk
 
 # npm
-npm install @entrolytics/node
+npm install @entrolytics/node-sdk
 
 # yarn
-yarn add @entrolytics/node
+yarn add @entrolytics/node-sdk
 
 # bun
-bun add @entrolytics/node
+bun add @entrolytics/node-sdk
 ```
 
-## Quick Start
-
 ```typescript
-import { Entrolytics } from '@entrolytics/node';
+import { Entrolytics } from '@entrolytics/node-sdk';
 
 // Create client instance
 const client = new Entrolytics({
