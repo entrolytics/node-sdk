@@ -69,7 +69,13 @@ export type WebVitalMetric = 'LCP' | 'INP' | 'CLS' | 'TTFB' | 'FCP';
 export type WebVitalRating = 'good' | 'needs-improvement' | 'poor';
 
 /** Navigation type for web vitals */
-export type NavigationType = 'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
+export type NavigationType =
+  | 'navigate'
+  | 'reload'
+  | 'back-forward'
+  | 'back-forward-cache'
+  | 'prerender'
+  | 'restore';
 
 /** Web Vitals tracking options */
 export interface TrackVitalOptions {
@@ -101,7 +107,13 @@ export interface TrackVitalsBatchOptions {
 }
 
 /** Form event types */
-export type FormEventType = 'start' | 'field_focus' | 'field_blur' | 'field_error' | 'submit' | 'abandon';
+export type FormEventType =
+  | 'start'
+  | 'field_focus'
+  | 'field_blur'
+  | 'field_error'
+  | 'submit'
+  | 'abandon';
 
 /** Form tracking options */
 export interface TrackFormOptions {
@@ -160,9 +172,21 @@ function detectDeploymentInfo(): Partial<DeploymentInfo> {
 
   return {
     deployId: env.VERCEL_DEPLOYMENT_ID || env.DEPLOY_ID || env.CF_PAGES_COMMIT_SHA || undefined,
-    gitSha: env.VERCEL_GIT_COMMIT_SHA || env.COMMIT_REF || env.CF_PAGES_COMMIT_SHA || env.GITHUB_SHA || undefined,
-    gitBranch: env.VERCEL_GIT_COMMIT_REF || env.BRANCH || env.CF_PAGES_BRANCH || env.GITHUB_REF_NAME || undefined,
-    deployUrl: env.VERCEL_URL ? `https://${env.VERCEL_URL}` : env.DEPLOY_URL || env.CF_PAGES_URL || undefined,
+    gitSha:
+      env.VERCEL_GIT_COMMIT_SHA ||
+      env.COMMIT_REF ||
+      env.CF_PAGES_COMMIT_SHA ||
+      env.GITHUB_SHA ||
+      undefined,
+    gitBranch:
+      env.VERCEL_GIT_COMMIT_REF ||
+      env.BRANCH ||
+      env.CF_PAGES_BRANCH ||
+      env.GITHUB_REF_NAME ||
+      undefined,
+    deployUrl: env.VERCEL_URL
+      ? `https://${env.VERCEL_URL}`
+      : env.DEPLOY_URL || env.CF_PAGES_URL || undefined,
   };
 }
 
@@ -532,7 +556,7 @@ export class Entrolytics {
 
     const payload = {
       website: websiteId,
-      vitals: options.vitals.map((v) => ({
+      vitals: options.vitals.map(v => ({
         ...v,
         url: options.url,
         path: options.path,
