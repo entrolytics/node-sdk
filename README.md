@@ -94,7 +94,7 @@ import { Entrolytics } from '@entrolytics/node-sdk';
 // Create client instance
 const client = new Entrolytics({
   websiteId: 'your-website-id',
-  hostUrl: 'https://ng.entrolytics.click', // or your self-hosted URL
+  hostUrl: 'https://entrolytics.click', // or your self-hosted URL
 });
 
 // Track a page view
@@ -122,7 +122,7 @@ await client.trackEvent({
 const client = new Entrolytics({
   // Required
   websiteId: 'your-website-id',
-  hostUrl: 'https://ng.entrolytics.click',
+  hostUrl: 'https://entrolytics.click',
 
   // Optional
   sessionId: 'custom-session-id',
@@ -308,7 +308,7 @@ const client = new Entrolytics({
 ```typescript
 const client = new Entrolytics({
   websiteId: 'your-website-id',
-  hostUrl: 'https://ng.entrolytics.click',
+  hostUrl: 'https://entrolytics.click',
   endpoint: 'edge',
 });
 ```
