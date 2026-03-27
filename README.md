@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/entrolytics/.github/main/media/entrov2.png" alt="Entrolytics" width="64" height="64">
+- <img src="https://raw.githubusercontent.com/entrolytics/.github/main/media/entrov2.png" alt="Entrolytics" width="64" height="64">
 
-  [![npm](https://img.shields.io/npm/v/@entrolytics/node-sdk.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/node-sdk)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-  [![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![npm](https://img.shields.io/npm/v/@entrolytics/node-sdk.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/node-sdk)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?logo=typescript\&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg?logo=node.js\&logoColor=white)](https://nodejs.org/)
 
 </div>
 
@@ -15,6 +15,7 @@
 **@entrolytics/node-sdk** is the official Node.js SDK for Entrolytics - first-party growth analytics for the edge. Track events server-side from any Node.js application.
 
 **Why use this SDK?**
+
 - Server-side event tracking from any Node.js environment
 - Web Vitals and Core Web Vitals tracking
 - Form analytics and deployment tracking
@@ -27,6 +28,7 @@
 <td width="50%">
 
 ### Analytics
+
 - Page view tracking
 - Custom event tracking
 - User identification
@@ -36,6 +38,7 @@
 <td width="50%">
 
 ### Advanced Features
+
 - Web Vitals (LCP, INP, CLS)
 - Form analytics
 - Deployment tracking
@@ -75,16 +78,21 @@ View analytics in dashboard
 ## Installation
 
 ```bash
+
 # pnpm (recommended)
+
 pnpm add @entrolytics/node-sdk
 
 # npm
+
 npm install @entrolytics/node-sdk
 
 # yarn
+
 yarn add @entrolytics/node-sdk
 
 # bun
+
 bun add @entrolytics/node-sdk
 ```
 
@@ -134,14 +142,14 @@ const client = new Entrolytics({
 
 ### Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `websiteId` | `string` | - | Your Entrolytics website ID (required) |
-| `hostUrl` | `string` | - | Entrolytics host URL (required) |
-| `sessionId` | `string` | - | Custom session identifier |
-| `userAgent` | `string` | Auto-generated | Custom user agent for requests |
-| `timeout` | `number` | `10000` | Request timeout in milliseconds |
-| `endpoint` | `string` | `'standard'` | API endpoint variant |
+| Option      | Type     | Default        | Description                            |
+| ----------- | -------- | -------------- | -------------------------------------- |
+| `websiteId` | `string` | -              | Your Entrolytics website ID (required) |
+| `hostUrl`   | `string` | -              | Entrolytics host URL (required)        |
+| `sessionId` | `string` | -              | Custom session identifier              |
+| `userAgent` | `string` | Auto-generated | Custom user agent for requests         |
+| `timeout`   | `number` | `10000`        | Request timeout in milliseconds        |
+| `endpoint`  | `string` | `'standard'`   | API endpoint variant                   |
 
 ## API Reference
 
@@ -224,15 +232,17 @@ client.reset();
 import { onLCP, onINP, onCLS } from 'web-vitals';
 
 // Track Core Web Vitals
-onLCP((metric) => client.trackVital({
-  metric: 'LCP',
-  value: metric.value,
-  rating: metric.rating,
-  delta: metric.delta,
-  id: metric.id,
-  navigationType: metric.navigationType,
-  attribution: metric.attribution,
-}));
+onLCP(metric =>
+  client.trackVital({
+    metric: 'LCP',
+    value: metric.value,
+    rating: metric.rating,
+    delta: metric.delta,
+    id: metric.id,
+    navigationType: metric.navigationType,
+    attribution: metric.attribution,
+  }),
+);
 ```
 
 ### Form Analytics

@@ -1,3 +1,10 @@
+import { API_ROUTES } from '@entrolytics/shared';
+import type {
+  FormEventType,
+  NavigationType,
+  VitalRating,
+  VitalType,
+} from '@entrolytics/shared';
 import {
   ApiError,
   ConfigurationError,
@@ -7,10 +14,14 @@ import {
   ValidationError,
 } from './errors.js';
 
+export type { FormEventType, NavigationType };
+
 export interface EntrolyticsOptions {
   hostUrl?: string;
   websiteId?: string;
+  apiKey?: string;
   sessionId?: string;
+  visitorId?: string;
   userAgent?: string;
   timeout?: number;
   endpoint?: 'standard' | 'edge' | 'native';
@@ -63,19 +74,10 @@ export interface IdentifyOptions {
 // ============================================================================
 
 /** Web Vitals metric types */
-export type WebVitalMetric = 'LCP' | 'INP' | 'CLS' | 'TTFB' | 'FCP';
+export type WebVitalMetric = VitalType;
 
 /** Web Vitals rating */
-export type WebVitalRating = 'good' | 'needs-improvement' | 'poor';
-
-/** Navigation type for web vitals */
-export type NavigationType =
-  | 'navigate'
-  | 'reload'
-  | 'back-forward'
-  | 'back-forward-cache'
-  | 'prerender'
-  | 'restore';
+export type WebVitalRating = VitalRating;
 
 /** Web Vitals tracking options */
 export interface TrackVitalOptions {
@@ -97,23 +99,24 @@ export interface TrackVitalOptions {
   url?: string;
   /** Page path */
   path?: string;
+  /** Session ID (UUID) */
+  sessionId?: string;
+  /** Visitor ID (UUID) */
+  visitorId?: string;
+  /** Optional browser name */
+  browser?: string;
+  /** Optional device type */
+  deviceType?: string;
 }
 
 /** Batch of web vitals */
 export interface TrackVitalsBatchOptions {
-  vitals: Omit<TrackVitalOptions, 'url' | 'path'>[];
+  vitals: Omit<TrackVitalOptions, 'url' | 'path' | 'sessionId' | 'visitorId'>[];
   url?: string;
   path?: string;
+  sessionId?: string;
+  visitorId?: string;
 }
-
-/** Form event types */
-export type FormEventType =
-  | 'start'
-  | 'field_focus'
-  | 'field_blur'
-  | 'field_error'
-  | 'submit'
-  | 'abandon';
 
 /** Form tracking options */
 export interface TrackFormOptions {
@@ -139,11 +142,17 @@ export interface TrackFormOptions {
   errorMessage?: string;
   /** Whether submission was successful (for submit events) */
   success?: boolean;
+  /** Session ID (UUID) */
+  sessionId?: string;
+  /** Visitor ID (UUID) */
+  visitorId?: string;
 }
 
 /** Batch of form events */
 export interface TrackFormBatchOptions {
-  events: TrackFormOptions[];
+  events: Omit<TrackFormOptions, 'sessionId' | 'visitorId'>[];
+  sessionId?: string;
+  visitorId?: string;
 }
 
 /** Deployment information */
@@ -195,6 +204,39 @@ function getVersion(): string {
   return typeof process !== 'undefined' && process?.version ? process.version : 'unknown';
 }
 
+function generateUuid(): string {
+  if (
+    typeof globalThis.crypto !== 'undefined' &&
+    typeof globalThis.crypto.randomUUID === 'function'
+  ) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  // RFC4122 v4 fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.floor(Math.random() * 16);
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+const isEventDataValue = (value: unknown): value is EventData[string] =>
+  value === null ||
+  typeof value === 'string' ||
+  typeof value === 'number' ||
+  typeof value === 'boolean' ||
+  value instanceof Date;
+
+function toEventData(properties: Record<string, unknown>): EventData {
+  const eventData: EventData = {};
+  for (const [key, value] of Object.entries(properties)) {
+    if (isEventDataValue(value)) {
+      eventData[key] = value;
+    }
+  }
+  return eventData;
+}
+
 export class Entrolytics {
   options: EntrolyticsOptions;
   properties: Record<string, unknown>;
@@ -207,6 +249,8 @@ export class Entrolytics {
     this.options = {
       timeout: 10000,
       endpoint: 'standard',
+      sessionId: options.sessionId || generateUuid(),
+      visitorId: options.visitorId || generateUuid(),
       deployId: detectedDeployment.deployId,
       gitSha: detectedDeployment.gitSha,
       gitBranch: detectedDeployment.gitBranch,
@@ -223,19 +267,41 @@ export class Entrolytics {
     this.options = { ...this.options, ...options };
   }
 
+  private resolveSessionId(override?: string): string {
+    const value = override || this.options.sessionId;
+    if (value) return value;
+
+    const generated = generateUuid();
+    this.options.sessionId = generated;
+    return generated;
+  }
+
+  private resolveVisitorId(override?: string): string {
+    const value = override || this.options.visitorId;
+    if (value) return value;
+
+    const generated = generateUuid();
+    this.options.visitorId = generated;
+    return generated;
+  }
+
+  private requireApiKey(): string {
+    const apiKey = this.options.apiKey?.trim();
+    if (!apiKey) {
+      throw new ConfigurationError(
+        'apiKey is required for collection endpoints. Call init() with apiKey first.',
+        'apiKey',
+      );
+    }
+
+    return apiKey;
+  }
+
   /**
    * Get the API endpoint path based on configuration
    */
   private getEndpointPath(): string {
-    switch (this.options.endpoint) {
-      case 'edge':
-        return '/api/send-edge';
-      case 'native':
-        return '/api/send-native';
-      case 'standard':
-      default:
-        return '/api/send';
-    }
+    return '/collect';
   }
 
   /**
@@ -251,18 +317,70 @@ export class Entrolytics {
       );
     }
 
+    const apiKey = this.requireApiKey();
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
       const endpointPath = this.getEndpointPath();
-      const response = await fetch(`${hostUrl}${endpointPath}`, {
+      const websiteId = payload.website || this.options.websiteId;
+      if (!websiteId) {
+        throw new ConfigurationError(
+          'websiteId is required. Call init() with websiteId first.',
+          'websiteId',
+        );
+      }
+
+      const rawUrl = payload.url || '/';
+      let normalizedUrl = rawUrl;
+      if (!/^https?:\/\//i.test(rawUrl)) {
+        const cleanHost = hostUrl.replace(/\/$/, '');
+        const normalizedPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+        normalizedUrl = `${cleanHost}${normalizedPath}`;
+      }
+
+      const normalizedReferrer =
+        payload.referrer && /^https?:\/\//i.test(payload.referrer) ? payload.referrer : undefined;
+
+      const sessionId = this.resolveSessionId(payload.session);
+      const visitorId = this.resolveVisitorId();
+
+      const properties: Record<string, unknown> = {
+        ...payload.data,
+      };
+
+      if (payload.hostname) properties.hostname = payload.hostname;
+      if (payload.language) properties.language = payload.language;
+      if (payload.screen) properties.screen = payload.screen;
+      if (payload.title) properties.title = payload.title;
+
+      if (type === 'identify') {
+        properties.identify = true;
+      }
+
+      const eventName = type === 'identify' ? 'identify' : payload.name;
+      const collectPayload = {
+        websiteId,
+        sessionId,
+        visitorId,
+        url: normalizedUrl,
+        eventType: eventName ? 'custom_event' : 'pageview',
+        ...(eventName && { eventName }),
+        ...(normalizedReferrer && { referrer: normalizedReferrer }),
+        ...(Object.keys(properties).length > 0 && { properties }),
+      };
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'User-Agent': userAgent || `Mozilla/5.0 EntrolyticsNG/${getVersion()}`,
+        'x-api-key': apiKey,
+      };
+
+      const baseUrl = hostUrl.replace(/\/$/, '');
+      const response = await fetch(`${baseUrl}${endpointPath}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': userAgent || `Mozilla/5.0 EntrolyticsNG/${getVersion()}`,
-        },
-        body: JSON.stringify({ type, payload }),
+        headers,
+        body: JSON.stringify(collectPayload),
         signal: controller.signal,
       });
 
@@ -391,10 +509,12 @@ export class Entrolytics {
     }
 
     // Object-based tracking
+    const derivedData = eventData ?? ('data' in event ? event.data : undefined);
+
     return this.send({
       website: websiteId,
       ...event,
-      data: eventData || (event as TrackEventOptions).data,
+      data: derivedData,
     });
   }
 
@@ -418,7 +538,7 @@ export class Entrolytics {
       {
         website: websiteId,
         session: properties.sessionId || sessionId,
-        data: { ...this.properties } as EventData,
+        data: toEventData(this.properties),
       },
       'identify',
     );
@@ -496,10 +616,9 @@ export class Entrolytics {
       );
     }
 
-    const { metric, value, rating, delta, id, navigationType, attribution, url, path } = options;
+    const apiKey = this.requireApiKey();
 
-    const payload = {
-      website: websiteId,
+    const {
       metric,
       value,
       rating,
@@ -509,16 +628,41 @@ export class Entrolytics {
       attribution,
       url,
       path,
+      browser,
+      deviceType,
+      sessionId,
+      visitorId,
+    } = options;
+
+    const payload = {
+      websiteId,
+      sessionId: this.resolveSessionId(sessionId),
+      visitorId: this.resolveVisitorId(visitorId),
+      metricName: metric,
+      metricValue: value,
+      // Keep backwards-compatible fields for clients that read request echoes
+      metric,
+      value,
+      rating,
+      delta,
+      id,
+      navigationType,
+      attribution,
+      url: url || '/__entrolytics_server__',
+      path: path || '/__entrolytics_server__',
+      ...(browser && { browser }),
+      ...(deviceType && { deviceType }),
     };
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.options.timeout || 10000);
 
     try {
-      const response = await fetch(`${hostUrl}/api/collect/vitals`, {
+      const response = await fetch(`${hostUrl}${API_ROUTES.collectVitals}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -554,12 +698,21 @@ export class Entrolytics {
       );
     }
 
+    const apiKey = this.requireApiKey();
+    const sessionId = this.resolveSessionId(options.sessionId);
+    const visitorId = this.resolveVisitorId(options.visitorId);
+
     const payload = {
-      website: websiteId,
+      websiteId,
+      sessionId,
+      visitorId,
       vitals: options.vitals.map(v => ({
-        ...v,
-        url: options.url,
-        path: options.path,
+        url: options.url || '/__entrolytics_server__',
+        path: options.path || '/__entrolytics_server__',
+        metricName: v.metric,
+        metricValue: v.value,
+        ...(v.browser && { browser: v.browser }),
+        ...(v.deviceType && { deviceType: v.deviceType }),
       })),
     };
 
@@ -567,10 +720,11 @@ export class Entrolytics {
     const timeoutId = setTimeout(() => controller.abort(), this.options.timeout || 10000);
 
     try {
-      const response = await fetch(`${hostUrl}/api/collect/vitals`, {
+      const response = await fetch(`${hostUrl}${API_ROUTES.collectVitalsBatch}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -625,19 +779,28 @@ export class Entrolytics {
       );
     }
 
+    const apiKey = this.requireApiKey();
+    const sessionId = this.resolveSessionId(options.sessionId);
+    const visitorId = this.resolveVisitorId(options.visitorId);
+
+    const { sessionId: _sessionId, visitorId: _visitorId, ...event } = options;
+
     const payload = {
-      website: websiteId,
-      ...options,
+      websiteId,
+      sessionId,
+      visitorId,
+      ...event,
     };
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.options.timeout || 10000);
 
     try {
-      const response = await fetch(`${hostUrl}/api/collect/forms`, {
+      const response = await fetch(`${hostUrl}${API_ROUTES.collectForms}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -673,8 +836,14 @@ export class Entrolytics {
       );
     }
 
+    const apiKey = this.requireApiKey();
+    const sessionId = this.resolveSessionId(options.sessionId);
+    const visitorId = this.resolveVisitorId(options.visitorId);
+
     const payload = {
-      website: websiteId,
+      websiteId,
+      sessionId,
+      visitorId,
       events: options.events,
     };
 
@@ -682,10 +851,11 @@ export class Entrolytics {
     const timeoutId = setTimeout(() => controller.abort(), this.options.timeout || 10000);
 
     try {
-      const response = await fetch(`${hostUrl}/api/collect/forms`, {
+      const response = await fetch(`${hostUrl}${API_ROUTES.collectFormsBatch}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
