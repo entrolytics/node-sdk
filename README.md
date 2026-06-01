@@ -183,25 +183,6 @@ await client.trackEvent({
 });
 ```
 
-### `track(event, eventData?)`
-
-Flexible tracking method.
-
-```typescript
-// Track with event name
-await client.track('button_click');
-
-// Track with event name and data
-await client.track('purchase', { amount: 99.99 });
-
-// Track with full options
-await client.track({
-  url: '/checkout',
-  name: 'purchase_complete',
-  data: { orderId: 'order_123' },
-});
-```
-
 ### `identify(properties)`
 
 Identify a user/session with custom properties.

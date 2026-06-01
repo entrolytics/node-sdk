@@ -205,19 +205,7 @@ function getVersion(): string {
 }
 
 function generateUuid(): string {
-  if (
-    typeof globalThis.crypto !== 'undefined' &&
-    typeof globalThis.crypto.randomUUID === 'function'
-  ) {
-    return globalThis.crypto.randomUUID();
-  }
-
-  // RFC4122 v4 fallback
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.floor(Math.random() * 16);
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  return globalThis.crypto.randomUUID();
 }
 
 const isEventDataValue = (value: unknown): value is EventData[string] =>
@@ -484,41 +472,6 @@ export class Entrolytics {
   }
 
   /**
-   * Track a page view or event (flexible method for backwards compatibility)
-   */
-  async track(
-    event: string | TrackPageOptions | TrackEventOptions,
-    eventData?: EventData,
-  ): Promise<Response> {
-    const { websiteId } = this.options;
-
-    if (!websiteId) {
-      throw new ConfigurationError(
-        'websiteId is required. Call init() with websiteId first.',
-        'websiteId',
-      );
-    }
-
-    if (typeof event === 'string') {
-      // Simple event tracking with just a name
-      return this.send({
-        website: websiteId,
-        name: event,
-        data: eventData,
-      });
-    }
-
-    // Object-based tracking
-    const derivedData = eventData ?? ('data' in event ? event.data : undefined);
-
-    return this.send({
-      website: websiteId,
-      ...event,
-      data: derivedData,
-    });
-  }
-
-  /**
    * Identify a user/session with custom properties
    */
   async identify(properties: IdentifyOptions = {}): Promise<Response> {
@@ -640,9 +593,6 @@ export class Entrolytics {
       visitorId: this.resolveVisitorId(visitorId),
       metricName: metric,
       metricValue: value,
-      // Keep backwards-compatible fields for clients that read request echoes
-      metric,
-      value,
       rating,
       delta,
       id,
