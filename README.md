@@ -3,8 +3,8 @@
 
 [![npm](https://img.shields.io/npm/v/@entrolytics/node-sdk.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/node-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?logo=typescript\&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg?logo=node.js\&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-24.19.0+-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 
 </div>
 
@@ -306,7 +306,7 @@ const client = new Entrolytics({
 
 ## Requirements
 
-- Node.js >= 24.x
+- Node.js >= 24.19.0
 
 ## License
 

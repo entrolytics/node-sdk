@@ -1,10 +1,5 @@
 import { API_ROUTES } from '@entrolytics/shared';
-import type {
-  FormEventType,
-  NavigationType,
-  VitalRating,
-  VitalType,
-} from '@entrolytics/shared';
+import type { FormEventType, NavigationType, VitalRating, VitalType } from '@entrolytics/shared';
 import {
   ApiError,
   ConfigurationError,
@@ -24,7 +19,6 @@ export interface EntrolyticsOptions {
   visitorId?: string;
   userAgent?: string;
   timeout?: number;
-  endpoint?: 'standard' | 'edge' | 'native';
   /** Deployment ID (auto-detected from VERCEL_DEPLOYMENT_ID, DEPLOY_ID env vars) */
   deployId?: string;
   /** Git SHA (auto-detected from VERCEL_GIT_COMMIT_SHA, COMMIT_REF env vars) */
@@ -229,6 +223,8 @@ export class Entrolytics {
   options: EntrolyticsOptions;
   properties: Record<string, unknown>;
   private deploymentInfo: Partial<DeploymentInfo>;
+  private generatedVisitorDay?: string;
+  private generatedVisitorId?: string;
 
   constructor(options: EntrolyticsOptions = {}) {
     // Auto-detect deployment info from environment
@@ -236,9 +232,8 @@ export class Entrolytics {
 
     this.options = {
       timeout: 10000,
-      endpoint: 'standard',
       sessionId: options.sessionId || generateUuid(),
-      visitorId: options.visitorId || generateUuid(),
+      visitorId: options.visitorId,
       deployId: detectedDeployment.deployId,
       gitSha: detectedDeployment.gitSha,
       gitBranch: detectedDeployment.gitBranch,
@@ -268,9 +263,12 @@ export class Entrolytics {
     const value = override || this.options.visitorId;
     if (value) return value;
 
-    const generated = generateUuid();
-    this.options.visitorId = generated;
-    return generated;
+    const currentDay = new Date().toISOString().slice(0, 10);
+    if (!this.generatedVisitorId || this.generatedVisitorDay !== currentDay) {
+      this.generatedVisitorDay = currentDay;
+      this.generatedVisitorId = generateUuid();
+    }
+    return this.generatedVisitorId;
   }
 
   private requireApiKey(): string {
@@ -349,6 +347,8 @@ export class Entrolytics {
       const eventName = type === 'identify' ? 'identify' : payload.name;
       const collectPayload = {
         websiteId,
+        eventId: generateUuid(),
+        timestamp: new Date().toISOString(),
         sessionId,
         visitorId,
         url: normalizedUrl,

@@ -45,21 +45,19 @@
     "lint": "vp lint . && vp fmt --check .",
     "lint:fix-unsafe": "vp lint -f stylish --import-plugin --type-aware --type-check --vitest-plugin --fix --fix-suggestions --fix-dangerously .",
     "test": "vp test run",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@entrolytics/shared": "^2.4.0"
+    "@entrolytics/shared": "^2.4.2"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "typescript": "^6.0.3",
-    "vite-plus": "^0.1.23",
-    "vitest": "^4.1.7"
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2",
+    "vite-plus": "^0.2.8",
+    "vitest": "^4.1.10"
   },
   "engines": {
-    "node": ">=24.x"
+    "node": ">=24.19.0"
   },
-  "packageManager": "pnpm@11.5.0"
-
-  
+  "packageManager": "pnpm@11.21.0"
 }
