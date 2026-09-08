@@ -9,8 +9,13 @@ export default defineConfig({
     clean: true,
     sourcemap: true,
     target: 'node24',
-    deps: { resolveDepSubpath: true,
-      alwaysBundle: ['@entrolytics/shared'],
+    deps: {
+      resolveDepSubpath: true,
+      // @entrolytics/shared is a declared runtime dependency, so it must stay
+      // external. Bundling it froze a copy at build time: consumers installed
+      // shared but ran an inlined snapshot, so fixes to shared never reached
+      // them without republishing this package.
+      neverBundle: ['@entrolytics/shared'],
     },
   },
   fmt: {
