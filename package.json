@@ -53,8 +53,8 @@
   "devDependencies": {
     "@types/node": "^26.5.0",
     "typescript": "next",
-    "vite-plus": "^0.3.1",
-    "vitest": "^5.0.0"
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   },
   "engines": {
     "node": ">=24.20.0"

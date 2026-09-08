@@ -9,7 +9,7 @@ export default defineConfig({
     clean: true,
     sourcemap: true,
     target: 'node24',
-    deps: {
+    deps: { resolveDepSubpath: true,
       alwaysBundle: ['@entrolytics/shared'],
     },
   },

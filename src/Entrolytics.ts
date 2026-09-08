@@ -847,6 +847,6 @@ export class Entrolytics {
 }
 
 // Default instance for convenience
-const entrolytics = new Entrolytics();
+const entrolytics: Entrolytics = new Entrolytics();
 
 export default entrolytics;
