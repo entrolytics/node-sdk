@@ -2,6 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Entrolytics } from './Entrolytics';
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+function requestBody([, request]: Parameters<typeof fetch>): unknown {
+  if (typeof request?.body !== 'string') throw new Error('Expected a JSON request body');
+  return JSON.parse(request.body);
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -35,6 +43,91 @@ describe('Entrolytics', () => {
     expect(payload).toHaveProperty('eventId');
     expect(payload).toHaveProperty('timestamp');
     expect(payload).toHaveProperty('visitorId');
+  });
+
+  it('sends eventId, timestamp, and an absolute url with vitals', async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchFn);
+    const client = new Entrolytics({
+      apiKey: 'secret',
+      hostUrl: 'https://api.example.test',
+      websiteId: 'website-id',
+    });
+
+    await client.trackVital({ metric: 'LCP', value: 1200, rating: 'good', path: '/pricing' });
+    await client.trackVital({
+      metric: 'CLS',
+      value: 0.1,
+      rating: 'good',
+      url: 'https://site.example.test/docs',
+    });
+
+    const [first, second] = fetchFn.mock.calls.map(requestBody);
+    expect(first).toMatchObject({
+      eventId: expect.stringMatching(UUID_PATTERN),
+      metricName: 'LCP',
+      path: '/pricing',
+      timestamp: expect.stringMatching(ISO_TIMESTAMP_PATTERN),
+      url: 'https://api.example.test/pricing',
+    });
+    expect(second).toMatchObject({
+      eventId: expect.stringMatching(UUID_PATTERN),
+      url: 'https://site.example.test/docs',
+    });
+  });
+
+  it('sends eventId and timestamp with each batched vital', async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchFn);
+    const client = new Entrolytics({
+      apiKey: 'secret',
+      hostUrl: 'https://api.example.test',
+      websiteId: 'website-id',
+    });
+
+    await client.trackVitalsBatch({ vitals: [{ metric: 'LCP', value: 1200, rating: 'good' }] });
+
+    expect(requestBody(fetchFn.mock.calls[0])).toMatchObject({
+      vitals: [
+        {
+          eventId: expect.stringMatching(UUID_PATTERN),
+          timestamp: expect.stringMatching(ISO_TIMESTAMP_PATTERN),
+          url: 'https://api.example.test/__entrolytics_server__',
+        },
+      ],
+    });
+  });
+
+  it('sends eventId and timestamp with form events', async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchFn);
+    const client = new Entrolytics({
+      apiKey: 'secret',
+      hostUrl: 'https://api.example.test',
+      websiteId: 'website-id',
+    });
+
+    await client.trackForm({ eventType: 'start', formId: 'signup', urlPath: '/signup' });
+    await client.trackFormBatch({
+      events: [{ eventType: 'submit', formId: 'signup', urlPath: '/signup', success: true }],
+    });
+
+    const [single, batch] = fetchFn.mock.calls.map(requestBody);
+    expect(single).toMatchObject({
+      eventId: expect.stringMatching(UUID_PATTERN),
+      eventType: 'start',
+      formId: 'signup',
+      timestamp: expect.stringMatching(ISO_TIMESTAMP_PATTERN),
+    });
+    expect(batch).toMatchObject({
+      events: [
+        {
+          eventId: expect.stringMatching(UUID_PATTERN),
+          eventType: 'submit',
+          timestamp: expect.stringMatching(ISO_TIMESTAMP_PATTERN),
+        },
+      ],
+    });
   });
 
   it('rejects collection without an API key', async () => {

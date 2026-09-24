@@ -202,6 +202,13 @@ function generateUuid(): string {
   return globalThis.crypto.randomUUID();
 }
 
+/** Resolve a relative URL or path against the host so the API receives an absolute URL. */
+function toAbsoluteUrl(rawUrl: string, hostUrl: string): string {
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  const normalizedPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+  return `${hostUrl.replace(/\/$/, '')}${normalizedPath}`;
+}
+
 const isEventDataValue = (value: unknown): value is EventData[string] =>
   value === null ||
   typeof value === 'string' ||
@@ -317,13 +324,7 @@ export class Entrolytics {
         );
       }
 
-      const rawUrl = payload.url || '/';
-      let normalizedUrl = rawUrl;
-      if (!/^https?:\/\//i.test(rawUrl)) {
-        const cleanHost = hostUrl.replace(/\/$/, '');
-        const normalizedPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-        normalizedUrl = `${cleanHost}${normalizedPath}`;
-      }
+      const normalizedUrl = toAbsoluteUrl(payload.url || '/', hostUrl);
 
       const normalizedReferrer =
         payload.referrer && /^https?:\/\//i.test(payload.referrer) ? payload.referrer : undefined;
@@ -589,6 +590,8 @@ export class Entrolytics {
 
     const payload = {
       websiteId,
+      eventId: generateUuid(),
+      timestamp: new Date().toISOString(),
       sessionId: this.resolveSessionId(sessionId),
       visitorId: this.resolveVisitorId(visitorId),
       metricName: metric,
@@ -598,7 +601,7 @@ export class Entrolytics {
       id,
       navigationType,
       attribution,
-      url: url || '/__entrolytics_server__',
+      url: toAbsoluteUrl(url || path || '/__entrolytics_server__', hostUrl),
       path: path || '/__entrolytics_server__',
       ...(browser && { browser }),
       ...(deviceType && { deviceType }),
@@ -657,7 +660,9 @@ export class Entrolytics {
       sessionId,
       visitorId,
       vitals: options.vitals.map(v => ({
-        url: options.url || '/__entrolytics_server__',
+        eventId: generateUuid(),
+        timestamp: new Date().toISOString(),
+        url: toAbsoluteUrl(options.url || options.path || '/__entrolytics_server__', hostUrl),
         path: options.path || '/__entrolytics_server__',
         metricName: v.metric,
         metricValue: v.value,
@@ -737,6 +742,8 @@ export class Entrolytics {
 
     const payload = {
       websiteId,
+      eventId: generateUuid(),
+      timestamp: new Date().toISOString(),
       sessionId,
       visitorId,
       ...event,
@@ -794,7 +801,11 @@ export class Entrolytics {
       websiteId,
       sessionId,
       visitorId,
-      events: options.events,
+      events: options.events.map(event => ({
+        eventId: generateUuid(),
+        timestamp: new Date().toISOString(),
+        ...event,
+      })),
     };
 
     const controller = new AbortController();
