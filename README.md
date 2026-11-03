@@ -4,7 +4,7 @@
 [![npm](https://img.shields.io/npm/v/@entrolytics/node-sdk.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/node-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-24.20.0+-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-24.22.2+-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 
 </div>
 
@@ -102,7 +102,7 @@ import { Entrolytics } from '@entrolytics/node-sdk';
 // Create client instance
 const client = new Entrolytics({
   websiteId: 'your-website-id',
-  hostUrl: 'https://entrolytics.click', // or your self-hosted URL
+  hostUrl: 'https://entrolytics.dev', // or your self-hosted URL
 });
 
 // Track a page view
@@ -130,7 +130,7 @@ await client.trackEvent({
 const client = new Entrolytics({
   // Required
   websiteId: 'your-website-id',
-  hostUrl: 'https://entrolytics.click',
+  hostUrl: 'https://entrolytics.dev',
 
   // Optional
   sessionId: 'custom-session-id',
@@ -299,14 +299,14 @@ const client = new Entrolytics({
 ```typescript
 const client = new Entrolytics({
   websiteId: 'your-website-id',
-  hostUrl: 'https://entrolytics.click',
+  hostUrl: 'https://entrolytics.dev',
   endpoint: 'edge',
 });
 ```
 
 ## Requirements
 
-- Node.js >= 24.20.0
+- Node.js >= 24.22.2
 
 ## License
 
