@@ -130,6 +130,38 @@ describe('Entrolytics', () => {
     });
   });
 
+  it('marks a configured visitor id persistent and leaves the generated one unscoped', async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchFn);
+    const options = {
+      apiKey: 'secret',
+      hostUrl: 'https://api.example.test',
+      websiteId: 'website-id',
+    };
+    const configured = new Entrolytics({ ...options, visitorId: 'customer-42' });
+    const generated = new Entrolytics(options);
+
+    await configured.trackPageView({ url: '/' });
+    await configured.trackEvent({ name: 'signup', url: '/signup' });
+    await configured.identify({ plan: 'pro' });
+    await generated.trackEvent({ name: 'signup', url: '/signup' });
+    generated.init({ visitorId: 'customer-43' });
+    await generated.trackEvent({ name: 'signup', url: '/signup' });
+    await configured.trackVital({ metric: 'LCP', value: 1200, rating: 'good' });
+
+    const bodies = fetchFn.mock.calls.map(requestBody);
+    expect(bodies.slice(0, 5)).toMatchObject([
+      { visitorId: 'customer-42', visitorIdScope: 'persistent' },
+      { visitorId: 'customer-42', visitorIdScope: 'persistent' },
+      { visitorId: 'customer-42', visitorIdScope: 'persistent' },
+      {},
+      { visitorId: 'customer-43', visitorIdScope: 'persistent' },
+    ]);
+    expect(bodies[3]).not.toHaveProperty('visitorIdScope');
+    // The vitals endpoint does not accept the field.
+    expect(bodies[5]).not.toHaveProperty('visitorIdScope');
+  });
+
   it('rejects collection without an API key', async () => {
     const client = new Entrolytics({
       hostUrl: 'https://api.example.test',

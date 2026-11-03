@@ -352,6 +352,10 @@ export class Entrolytics {
         timestamp: new Date().toISOString(),
         sessionId,
         visitorId,
+        // How long visitorId identifies the visitor; the API's retention report counts only
+        // persistent ids. A configured visitorId is the application's own and persistent; the
+        // generated per-day id has no defined lifetime, so its scope is left out.
+        ...(this.options.visitorId && { visitorIdScope: 'persistent' as const }),
         url: normalizedUrl,
         eventType: eventName ? 'custom_event' : 'pageview',
         ...(eventName && { eventName }),
