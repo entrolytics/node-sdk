@@ -167,8 +167,8 @@ importers:
   .:
     dependencies:
       '@entrolytics/shared':
-        specifier: ^3.2.0
-        version: 3.2.0
+        specifier: ^3.2.1
+        version: 3.2.1
     devDependencies:
       '@types/node':
         specifier: ^26.6.11
@@ -200,8 +200,8 @@ packages:
   '@emnapi/wasi-threads@2.2.0':
     resolution: {integrity: sha512-JP7OYH38Q7+pyTAe14raZHLQIK7BDKbdwji+Xi3pcd/6QkJYQH3SX4wu6EplGrGJWRepoNzedfm0G3B9Z4e9Rw==}
 
-  '@entrolytics/shared@3.2.0':
-    resolution: {integrity: sha512-sQCZy19WxbokpT0+5JL9ZoJ5Ghy4OkVahsmfcdLSobOX2vN0bPpPP0z03qfVsGBxY71NT0jU4f4Ns3QAPyD6fg==}
+  '@entrolytics/shared@3.2.1':
+    resolution: {integrity: sha512-mtwCWv+emC30XOFOCbrxKhaOxhCWCWCV6GBVxWIEoqQLa0qhhx+F/WMAGwZF1j8uNQ2rMkflp+7ld2T/pkRllQ==}
 
   '@jridgewell/resolve-uri@3.1.3':
     resolution: {integrity: sha512-lhTtjtoEArWBjismtfS761S9Hlyn+nIZqOZVYoZ1Xn82PMNMVnk+jj/NhC4fAXGTs7ydONcJiR5vyQBTMDu27g==}
@@ -1101,7 +1101,7 @@ snapshots:
       tslib: 2.9.1
     optional: true
 
-  '@entrolytics/shared@3.2.0': {}
+  '@entrolytics/shared@3.2.1': {}
 
   '@jridgewell/resolve-uri@3.1.3': {}
 
