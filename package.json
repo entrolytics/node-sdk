@@ -48,7 +48,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@entrolytics/shared": "^3.2.1"
+    "@entrolytics/shared": "^3.2.2"
   },
   "devDependencies": {
     "@types/node": "^26.6.11",
