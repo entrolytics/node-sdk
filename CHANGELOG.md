@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-11-28
+
 ### Changed
 
 - Requires `@entrolytics/shared` 3.2.2.
@@ -21,6 +23,7 @@
   SDK. `trackPageView`, `trackEvent` and `identify` now send `visitorIdScope: "persistent"` when a
   `visitorId` is configured (constructor or `init`); it is left out for the generated per-day id.
 
-[Unreleased]: https://github.com/entrolytics/node-sdk/compare/v3.0.3...HEAD
+[Unreleased]: https://github.com/entrolytics/node-sdk/compare/v3.0.4...HEAD
+[3.0.4]: https://github.com/entrolytics/node-sdk/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/entrolytics/node-sdk/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/entrolytics/node-sdk/releases/tag/v3.0.2
